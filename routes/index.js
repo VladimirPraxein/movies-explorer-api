@@ -1,26 +1,17 @@
 const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
 const moviesRouter = require('./movies');
 const usersRouter = require('./users');
 const { login, createUser } = require('../controllers/users');
 const auth = require('../middlewares/auth');
+const { validationCreateUser, validationLoginUser } = require('../middlewares/validation');
 
 const NotFound = require('../errors/notFound');
 
-router.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
-}), login);
+const { pageNotFound } = require('../utils/errorMessages');
 
-router.post('/signup', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }).unknown(true),
-}), createUser);
+router.post('/signin', validationLoginUser, login);
+
+router.post('/signup', validationCreateUser, createUser);
 
 router.use(auth);
 
@@ -29,7 +20,7 @@ router.use('/users', usersRouter);
 router.use('/movies', moviesRouter);
 
 router.use('*', (req, res, next) => {
-  next(new NotFound('Запрашиваемый ресурс не найден.'));
+  next(new NotFound(pageNotFound));
 });
 
 module.exports = router;

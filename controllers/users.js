@@ -1,9 +1,15 @@
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+
 const NotFound = require('../errors/notFound');
 const BadRequest = require('../errors/badRequest');
 const Conflict = require('../errors/conflict');
+
+const conflict = require('../utils/errorMessages');
+const {
+  userNotFound, notFound, badRequestCreateUser, badRequestEditUser,
+} = require('../utils/errorMessages');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -15,7 +21,7 @@ const getMe = (req, res, next) => {
       if (user) {
         return res.send(user);
       }
-      throw new NotFound('Пользователь по указанному _id не найден.');
+      throw new NotFound(userNotFound);
     })
     .catch(next);
 };
@@ -36,9 +42,9 @@ const createUser = async (req, res, next) => {
     }))
     .catch((err) => {
       if (err.code === 11000) {
-        next(new Conflict('Такой пользователь уже существует.'));
+        next(new Conflict(conflict));
       } else if (err instanceof mongoose.Error.ValidationError) {
-        next(new BadRequest('Переданы некорректные данные при создании пользователя.'));
+        next(new BadRequest(badRequestCreateUser));
       } else {
         next(err);
       }
@@ -51,13 +57,15 @@ const updateUser = (req, res, next) => {
   User.findByIdAndUpdate(userId, { name, email }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        throw next(new NotFound('Передан несуществующий _id.'));
+        throw next(new NotFound(notFound));
       }
       return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequest('Переданы некорректные данные при обновлении профиля.'));
+      if (err.code === 11000) {
+        next(new Conflict(conflict));
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequest(badRequestEditUser));
       } else {
         next(err);
       }

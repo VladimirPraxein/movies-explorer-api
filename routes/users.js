@@ -1,6 +1,5 @@
 const usersRouter = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
-const { emailPattern } = require('../utils/constants');
+const { validationUpdateUser } = require('../middlewares/validation');
 
 const {
   getMe, updateUser,
@@ -9,12 +8,7 @@ const {
 usersRouter.get('/me', getMe);
 usersRouter.patch(
   '/me',
-  celebrate({
-    body: Joi.object().keys({
-      email: Joi.string().required().pattern(emailPattern),
-      name: Joi.string().required().min(2).max(30),
-    }),
-  }),
+  validationUpdateUser,
   updateUser,
 );
 
