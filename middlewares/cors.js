@@ -1,6 +1,6 @@
 const allowedCors = [
-  'https://mesto.project.students.nomoredomains.work',
-  'http://mesto.project.students.nomoredomains.work',
+  'https://movie.project.student.nomoredomains.rocks',
+  'http://movie.project.student.nomoredomains.rocks',
   'http://localhost:3001',
   'https://localhost:3001',
 ];
